@@ -951,7 +951,7 @@ function isAggregateFunction(expr) {
     return true;
   }
 
-  return argExprs.find(ex => isAggregateFunction(ex));
+  return !!argExprs.find(ex => isAggregateFunction(ex));
 }
 
 export function isAggregateQuery(queryState) {
@@ -963,7 +963,7 @@ export function isAggregateQuery(queryState) {
     return true;
   }
 
-  return queryState.selectExpressions.find(expr => {
+  return !!queryState.selectExpressions.find(expr => {
     if (typeof expr !== 'string') {
       let [name, value] = Object.entries(expr)[0];
       return isAggregateFunction(value);
