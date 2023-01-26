@@ -1,12 +1,12 @@
+import * as db from '../db';
+
 import {
   migrate,
   withMigrationsDir,
   getAppliedMigrations,
   getMigrationList,
-  getPending,
-  applyMigration
+  getPending
 } from './migrations';
-import * as db from '../db';
 
 beforeEach(global.emptyDatabase(true));
 

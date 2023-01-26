@@ -1,95 +1,171 @@
-import React, { useState, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { RectButton } from 'react-native-gesture-handler';
+import { useLocation } from 'react-router';
+
 import { css } from 'glamor';
+
+import Platform from 'loot-core/src/client/platform';
+
+import { styles, colors } from '../style';
+import Add from '../svg/v1/Add';
+import CheveronDown from '../svg/v1/CheveronDown';
+import CheveronRight from '../svg/v1/CheveronRight';
+import Cog from '../svg/v1/Cog';
+import Reports from '../svg/v1/Reports';
+import StoreFrontIcon from '../svg/v1/StoreFront';
+import TuningIcon from '../svg/v1/Tuning';
+import Wallet from '../svg/v1/Wallet';
+import ArrowButtonLeft1 from '../svg/v2/ArrowButtonLeft1';
+import CalendarIcon from '../svg/v2/Calendar';
+
 import {
   View,
   Block,
   AlignedText,
   AnchorLink,
   ButtonLink,
-  Button,
-  Menu,
-  Tooltip
+  Button
 } from './common';
-import { pushModal } from 'loot-core/src/client/actions/modals';
-import { closeBudget } from 'loot-core/src/client/actions/budgets';
-import Platform from 'loot-core/src/client/platform';
-import CellValue from './spreadsheet/CellValue';
-import Add from '../svg/v1/Add';
-import CalendarIcon from '../svg/v2/Calendar';
-import { styles, colors } from '../style';
-import Wallet from '../svg/v1/Wallet';
-import Reports from '../svg/v1/Reports';
-import ArrowButtonLeft1 from '../svg/v2/ArrowButtonLeft1';
-import PiggyBank from 'loot-design/src/svg/v1/PiggyBank';
-import Cog from '../svg/v1/Cog';
-import DotsHorizontalTriple from '../svg/v1/DotsHorizontalTriple';
-
 import { useDraggable, useDroppable, DropHighlight } from './sort.js';
+import CellValue from './spreadsheet/CellValue';
 
 export const SIDEBAR_WIDTH = 240;
 
-export function Item({
+const fontWeight = 600;
+
+function Item({
   children,
-  icon,
+  Icon,
+  title,
+  style,
+  indent = 0,
+  to,
+  exact,
+  onClick,
+  button,
+  forceHover = false,
+  forceActive = false
+}) {
+  const hoverStyle = {
+    backgroundColor: colors.n2
+  };
+  const activeStyle = {
+    borderLeft: '4px solid ' + colors.p8,
+    paddingLeft: 19 + indent - 4,
+    color: colors.p8
+  };
+  const linkStyle = [
+    {
+      ...styles.mediumText,
+      paddingTop: 9,
+      paddingBottom: 9,
+      paddingLeft: 19 + indent,
+      paddingRight: 10,
+      textDecoration: 'none',
+      color: colors.n9,
+      ...(forceHover ? hoverStyle : {}),
+      ...(forceActive ? activeStyle : {})
+    },
+    { ':hover': hoverStyle }
+  ];
+
+  const content = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 20
+      }}
+    >
+      <Icon width={15} height={15} style={{ color: 'inherit' }} />
+      <Block style={{ marginLeft: 8 }}>{title}</Block>
+      <View style={{ flex: 1 }} />
+      {button}
+    </View>
+  );
+
+  return (
+    <View style={[{ flexShrink: 0 }, style]}>
+      {onClick ? (
+        <RectButton onClick={onClick}>
+          <View style={linkStyle}>{content}</View>
+        </RectButton>
+      ) : (
+        <AnchorLink
+          style={linkStyle}
+          to={to}
+          exact={exact}
+          activeStyle={activeStyle}
+        >
+          {content}
+        </AnchorLink>
+      )}
+
+      {children ? <View style={{ marginTop: 5 }}>{children}</View> : null}
+    </View>
+  );
+}
+
+function SecondaryItem({
+  Icon,
   title,
   style,
   to,
   exact,
-  onButtonPress
+  onClick,
+  bold,
+  indent = 0
 }) {
-  const showButton = title === 'Accounts';
+  const hoverStyle = {
+    backgroundColor: colors.n2
+  };
+  const activeStyle = {
+    borderLeft: '4px solid ' + colors.p8,
+    paddingLeft: 14 - 4 + indent,
+    color: colors.p8,
+    fontWeight: bold ? fontWeight : null
+  };
+  const linkStyle = [
+    accountNameStyle,
+    {
+      color: colors.n9,
+      paddingLeft: 14 + indent,
+      fontWeight: bold ? fontWeight : null
+    },
+    { ':hover': hoverStyle }
+  ];
+
+  const content = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 16
+      }}
+    >
+      {Icon && <Icon width={12} height={12} style={{ color: 'inherit' }} />}
+      <Block style={{ marginLeft: Icon ? 8 : 0, color: 'inherit' }}>
+        {title}
+      </Block>
+    </View>
+  );
 
   return (
-    <View style={style}>
-      <AnchorLink
-        style={[
-          {
-            ...styles.mediumText,
-            paddingTop: 9,
-            paddingBottom: 9,
-            paddingLeft: 19,
-            paddingRight: 10,
-            textDecoration: 'none',
-            color: colors.n9
-          },
-          { ':hover': { backgroundColor: colors.n2 } }
-        ]}
-        to={to}
-        exact={exact}
-        activeStyle={{
-          borderLeft: '4px solid ' + colors.p8,
-          paddingLeft: 19 - 4,
-          color: colors.p8
-        }}
-      >
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            height: 20
-          }}
+    <View style={[{ flexShrink: 0 }, style]}>
+      {onClick ? (
+        <RectButton onClick={onClick}>
+          <View style={linkStyle}>{content}</View>
+        </RectButton>
+      ) : (
+        <AnchorLink
+          style={linkStyle}
+          to={to}
+          exact={exact}
+          activeStyle={activeStyle}
         >
-          {icon}
-          <Block style={{ marginLeft: 8 }}>{title}</Block>
-          <View style={{ flex: 1 }} />
-          {showButton && (
-            <Button
-              bare
-              onClick={e => {
-                e.stopPropagation();
-                e.preventDefault();
-                onButtonPress();
-              }}
-            >
-              <Add width={12} height={12} style={{ color: colors.n6 }} />
-            </Button>
-          )}
-        </View>
-      </AnchorLink>
-
-      {children ? <View style={{ marginTop: 5 }}>{children}</View> : null}
+          {content}
+        </AnchorLink>
+      )}
     </View>
   );
 }
@@ -149,7 +225,6 @@ function Account({
         <DropHighlight pos={dropPos} />
         <View innerRef={dragRef}>
           <AnchorLink
-            ref={dragRef}
             to={to}
             style={[
               accountNameStyle,
@@ -165,7 +240,7 @@ function Account({
               // has unread transactions. The system does mark is read and
               // unbolds it, but it still "flashes" bold so this just
               // ignores it if it's active
-              fontWeight: 'normal',
+              fontWeight: (style && style.fontWeight) || 'normal',
               '& .dot': {
                 backgroundColor: colors.p8,
                 transform: 'translateX(-4.5px)'
@@ -204,23 +279,22 @@ function Account({
               }
             />
           </AnchorLink>
-        </View>{' '}
+        </View>
       </View>
     </View>
   );
 }
 
-export function Accounts({
+function Accounts({
   accounts,
   failedAccounts,
   updatedAccounts,
-  to,
-  icon,
-  history,
   getAccountPath,
+  allAccountsPath,
   budgetedAccountPath,
   offBudgetAccountPath,
   getBalanceQuery,
+  getAllAccountBalance,
   getOnBudgetBalance,
   getOffBudgetBalance,
   showClosedAccounts,
@@ -258,107 +332,101 @@ export function Accounts({
         paddingTop: isDragging ? 15 : 0,
         marginTop: isDragging ? -15 : 0
       };
-    } else if (i === length - 1) {
-      return {
-        paddingBottom: 15
-      };
     }
     return null;
   };
 
   return (
-    <Item
-      title="Accounts"
-      to={to}
-      icon={icon}
-      exact={true}
-      style={{ marginBottom: 5, flex: 1 }}
-      onButtonPress={onAddAccount}
-    >
-      <View style={{ overflow: 'auto', marginTop: -5 }}>
-        {budgetedAccounts.length > 0 && (
-          <Account
-            name="For budget"
-            to={budgetedAccountPath}
-            query={getOnBudgetBalance()}
-            style={{ marginTop: 15, color: colors.n6 }}
-          />
-        )}
+    <View>
+      <Account
+        name="All accounts"
+        to={allAccountsPath}
+        query={getAllAccountBalance()}
+        style={{ fontWeight, marginTop: 15 }}
+      />
 
-        {budgetedAccounts.map((account, i) => (
+      {budgetedAccounts.length > 0 && (
+        <Account
+          name="For budget"
+          to={budgetedAccountPath}
+          query={getOnBudgetBalance()}
+          style={{ fontWeight, marginTop: 13 }}
+        />
+      )}
+
+      {budgetedAccounts.map((account, i) => (
+        <Account
+          key={account.id}
+          name={account.name}
+          account={account}
+          connected={!!account.bankId}
+          failed={failedAccounts && failedAccounts.has(account.id)}
+          updated={updatedAccounts && updatedAccounts.includes(account.id)}
+          to={getAccountPath(account)}
+          query={getBalanceQuery(account)}
+          onDragChange={onDragChange}
+          onDrop={onReorder}
+          outerStyle={makeDropPadding(i, budgetedAccounts.length)}
+        />
+      ))}
+
+      {offbudgetAccounts.length > 0 && (
+        <Account
+          name="Off budget"
+          to={offBudgetAccountPath}
+          query={getOffBudgetBalance()}
+          style={{ fontWeight, marginTop: 13 }}
+        />
+      )}
+
+      {offbudgetAccounts.map((account, i) => (
+        <Account
+          key={account.id}
+          name={account.name}
+          account={account}
+          connected={!!account.bankId}
+          failed={failedAccounts && failedAccounts.has(account.id)}
+          updated={updatedAccounts && updatedAccounts.includes(account.id)}
+          to={getAccountPath(account)}
+          query={getBalanceQuery(account)}
+          onDragChange={onDragChange}
+          onDrop={onReorder}
+          outerStyle={makeDropPadding(i, offbudgetAccounts.length)}
+        />
+      ))}
+
+      {closedAccounts.length > 0 && (
+        <SecondaryItem
+          style={{ marginTop: 15 }}
+          title={'Closed accounts' + (showClosedAccounts ? '' : '...')}
+          onClick={onToggleClosedAccounts}
+          bold
+        />
+      )}
+
+      {showClosedAccounts &&
+        closedAccounts.map((account, i) => (
           <Account
             key={account.id}
             name={account.name}
             account={account}
-            connected={!!account.bankId}
-            failed={failedAccounts && failedAccounts.has(account.id)}
-            updated={updatedAccounts && updatedAccounts.includes(account.id)}
             to={getAccountPath(account)}
             query={getBalanceQuery(account)}
             onDragChange={onDragChange}
             onDrop={onReorder}
-            outerStyle={makeDropPadding(i, budgetedAccounts.length)}
           />
         ))}
 
-        {offbudgetAccounts.length > 0 && (
-          <Account
-            name="Off budget"
-            to={offBudgetAccountPath}
-            query={getOffBudgetBalance()}
-            style={{ color: colors.n6 }}
-          />
-        )}
-
-        {offbudgetAccounts.map((account, i) => (
-          <Account
-            key={account.id}
-            name={account.name}
-            account={account}
-            connected={!!account.bankId}
-            failed={failedAccounts && failedAccounts.has(account.id)}
-            updated={updatedAccounts && updatedAccounts.includes(account.id)}
-            to={getAccountPath(account)}
-            query={getBalanceQuery(account)}
-            onDragChange={onDragChange}
-            onDrop={onReorder}
-            outerStyle={makeDropPadding(i, offbudgetAccounts.length)}
-          />
-        ))}
-
-        {closedAccounts.length > 0 && (
-          <View
-            style={[
-              accountNameStyle,
-              {
-                marginTop: 15,
-                color: colors.n6,
-                flexDirection: 'row',
-                userSelect: 'none',
-                alignItems: 'center',
-                flexShrink: 0
-              }
-            ]}
-            onClick={onToggleClosedAccounts}
-          >
-            {'Closed Accounts' + (showClosedAccounts ? '' : '...')}
-          </View>
-        )}
-
-        {showClosedAccounts &&
-          closedAccounts.map((account, i) => (
-            <Account
-              key={account.id}
-              name={account.name}
-              account={account}
-              to={getAccountPath(account)}
-              query={getBalanceQuery(account)}
-              onDragChange={onDragChange}
-              onDrop={onReorder}
-            />
-          ))}
-      </View>
-    </Item>
+      <SecondaryItem
+        style={{
+          marginTop: 15,
+          marginBottom: 9
+        }}
+        onClick={onAddAccount}
+        Icon={Add}
+        title="Add account"
+      />
+    </View>
   );
 }
 
@@ -372,73 +440,55 @@ function ToggleButton({ style, onFloat }) {
   );
 }
 
-const MenuButton = withRouter(function MenuButton({ history }) {
-  let dispatch = useDispatch();
-  let [menuOpen, setMenuOpen] = useState(false);
+function Tools() {
+  let [isOpen, setOpen] = useState(false);
+  let onToggle = useCallback(() => setOpen(open => !open), []);
+  let location = useLocation();
 
-  function onMenuSelect(type) {
-    setMenuOpen(false);
+  const isActive = ['/payees', '/rules', '/settings', '/tools'].some(route =>
+    location.pathname.startsWith(route)
+  );
 
-    switch (type) {
-      case 'open-payees':
-        dispatch(pushModal('manage-payees'));
-        break;
-      case 'open-rules':
-        dispatch(pushModal('manage-rules'));
-        break;
-      case 'find-schedules':
-        history.push('/schedule/discover', { locationPtr: history.location });
-        break;
-      case 'repair-splits':
-        history.push('/tools/fix-splits', { locationPtr: history.location });
-        break;
-      case 'settings':
-        history.push('/settings');
-        break;
-      case 'close':
-        dispatch(closeBudget());
-        break;
-      default:
+  useEffect(() => {
+    if (isActive) {
+      setOpen(true);
     }
-  }
-
-  let items = [
-    { name: 'open-payees', text: 'Manage Payees' },
-    { name: 'open-rules', text: 'Manage Rules' },
-    { name: 'find-schedules', text: 'Find schedules' },
-    { name: 'repair-splits', text: 'Repair split transactions' },
-    Menu.line,
-    { name: 'settings', text: 'Settings' },
-    { name: 'close', text: 'Close File' }
-  ];
+  }, [location.pathname]);
 
   return (
-    <Button
-      bare
-      style={{
-        color: colors.n5,
-        flexShrink: 0
-      }}
-      activeStyle={{ color: colors.p7 }}
-      onClick={() => setMenuOpen(true)}
-    >
-      <DotsHorizontalTriple
-        width={15}
-        height={15}
-        style={{ color: 'inherit', transform: 'rotateZ(0deg)' }}
+    <View style={{ flexShrink: 0 }}>
+      <Item
+        title="More"
+        Icon={isOpen ? CheveronDown : CheveronRight}
+        onClick={onToggle}
+        style={{ marginBottom: isOpen ? 8 : 0 }}
+        forceActive={!isOpen && isActive}
       />
-      {menuOpen && (
-        <Tooltip
-          position="bottom-right"
-          style={{ padding: 0 }}
-          onClose={() => setMenuOpen(false)}
-        >
-          <Menu onMenuSelect={onMenuSelect} items={items} />
-        </Tooltip>
+      {isOpen && (
+        <>
+          <SecondaryItem
+            title="Payees"
+            Icon={StoreFrontIcon}
+            to="/payees"
+            indent={15}
+          />
+          <SecondaryItem
+            title="Rules"
+            Icon={TuningIcon}
+            to="/rules"
+            indent={15}
+          />
+          <SecondaryItem
+            title="Settings"
+            Icon={Cog}
+            to="/settings"
+            indent={15}
+          />
+        </>
       )}
-    </Button>
+    </View>
   );
-});
+}
 
 export function Sidebar({
   style,
@@ -447,6 +497,7 @@ export function Sidebar({
   failedAccounts,
   updatedAccounts,
   getBalanceQuery,
+  getAllAccountBalance,
   getOnBudgetBalance,
   getOffBudgetBalance,
   showClosedAccounts,
@@ -464,7 +515,6 @@ export function Sidebar({
         {
           width: SIDEBAR_WIDTH,
           color: colors.n9,
-          overflow: 'auto',
           backgroundColor: colors.n1,
           '& .float': {
             opacity: 0,
@@ -532,42 +582,43 @@ export function Sidebar({
         <View style={{ flex: 1, flexDirection: 'row' }} />
 
         {!hasWindowButtons && <ToggleButton onFloat={onFloat} />}
-        {Platform.isBrowser && <MenuButton />}
       </View>
-      <Item
-        title="Budget"
-        icon={<Wallet width={15} height={15} style={{ color: 'inherit' }} />}
-        to="/budget"
-      />
-      <Item
-        title="Reports"
-        icon={<Reports width={15} height={15} style={{ color: 'inherit' }} />}
-        to="/reports"
-      />
-      <Item
-        title="Schedules"
-        icon={
-          <CalendarIcon width={15} height={15} style={{ color: 'inherit' }} />
-        }
-        to="/schedules"
-      />
-      <Accounts
-        to="/accounts"
-        icon={<PiggyBank width={15} height={15} style={{ color: 'inherit' }} />}
-        accounts={accounts}
-        failedAccounts={failedAccounts}
-        updatedAccounts={updatedAccounts}
-        getAccountPath={account => `/accounts/${account.id}`}
-        budgetedAccountPath="/accounts/budgeted"
-        offBudgetAccountPath="/accounts/offbudget"
-        getBalanceQuery={getBalanceQuery}
-        getOnBudgetBalance={getOnBudgetBalance}
-        getOffBudgetBalance={getOffBudgetBalance}
-        showClosedAccounts={showClosedAccounts}
-        onAddAccount={onAddAccount}
-        onToggleClosedAccounts={onToggleClosedAccounts}
-        onReorder={onReorder}
-      />
+
+      <View style={{ overflow: 'auto' }}>
+        <Item title="Budget" Icon={Wallet} to="/budget" />
+        <Item title="Reports" Icon={Reports} to="/reports" />
+
+        <Item title="Schedules" Icon={CalendarIcon} to="/schedules" />
+
+        <Tools />
+
+        <View
+          style={{
+            height: 1,
+            backgroundColor: colors.n3,
+            marginTop: 15,
+            flexShrink: 0
+          }}
+        />
+
+        <Accounts
+          accounts={accounts}
+          failedAccounts={failedAccounts}
+          updatedAccounts={updatedAccounts}
+          getAccountPath={account => `/accounts/${account.id}`}
+          allAccountsPath="/accounts"
+          budgetedAccountPath="/accounts/budgeted"
+          offBudgetAccountPath="/accounts/offbudget"
+          getBalanceQuery={getBalanceQuery}
+          getAllAccountBalance={getAllAccountBalance}
+          getOnBudgetBalance={getOnBudgetBalance}
+          getOffBudgetBalance={getOffBudgetBalance}
+          showClosedAccounts={showClosedAccounts}
+          onAddAccount={onAddAccount}
+          onToggleClosedAccounts={onToggleClosedAccounts}
+          onReorder={onReorder}
+        />
+      </View>
     </View>
   );
 }

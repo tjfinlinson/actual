@@ -45,7 +45,9 @@ export function listenForSyncEvent(actions, store) {
     } else if (type === 'error') {
       let notif = null;
       let learnMore =
-        '[Learn more](https://actualbudget.com/docs/overview/syncing-across-devices/#debugging-sync-issues)';
+        '[Learn more](https://actualbudget.github.io/docs/Getting-Started/sync#debugging-sync-issues)';
+      const githubIssueLink =
+        'https://github.com/actualbudget/actual/issues/new?assignees=&labels=bug%2Cneeds+triage&template=bug-report.yml&title=%5BBug%5D%3A+';
 
       switch (subtype) {
         case 'out-of-sync':
@@ -95,7 +97,7 @@ export function listenForSyncEvent(actions, store) {
               'This happens rarely (if ever again). The internal syncing format ' +
               'has changed and you need to reset sync. This will upload data from ' +
               'this device and revert all other devices. ' +
-              '[Learn more about what this means](https://actualbudget.com/docs/overview/syncing-across-devices/#what-does-resetting-sync-mean).' +
+              '[Learn more about what this means](https://actualbudget.github.io/docs/Getting-Started/sync#what-does-resetting-sync-mean).' +
               '\n\nOld encryption keys are not migrated. If using ' +
               'encryption, [reset encryption here](#makeKey).',
             messageActions: {
@@ -170,7 +172,7 @@ export function listenForSyncEvent(actions, store) {
           // the server does not match the local one. This can mean a
           // few things depending on the state, and we try to show an
           // appropriate message and call to action to fix it.
-          let { groupId, cloudFileId } = store.getState().prefs.local;
+          let { cloudFileId } = store.getState().prefs.local;
 
           notif = {
             title: 'Syncing has been reset on this cloud file',
@@ -235,9 +237,7 @@ export function listenForSyncEvent(actions, store) {
           break;
         case 'apply-failure':
           notif = {
-            message:
-              "We couldn't apply that change to the database. This is a bug, " +
-              'and it has been reported.'
+            message: `We couldn't apply that change to the database. Please report this as a bug by [opening a Github issue](${githubIssueLink}).`
           };
           break;
         case 'beta-version':
@@ -246,9 +246,7 @@ export function listenForSyncEvent(actions, store) {
           break;
         default:
           notif = {
-            message:
-              'We had problems syncing your changes. This is a bug, ' +
-              'and it has been reported.'
+            message: `We had problems syncing your changes. Please report this as a bug by [opening a Github issue](${githubIssueLink}).`
           };
       }
 

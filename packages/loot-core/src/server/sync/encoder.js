@@ -1,6 +1,8 @@
 import encryption from '../encryption';
 import * as prefs from '../prefs';
+
 let { SyncError } = require('../errors');
+
 let SyncPb = require('./proto/sync_pb');
 
 function coerceBuffer(value) {

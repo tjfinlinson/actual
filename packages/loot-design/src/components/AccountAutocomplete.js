@@ -1,8 +1,11 @@
 import React from 'react';
+
 import { useCachedAccounts } from 'loot-core/src/client/data-hooks/accounts';
+
+import { colors } from '../style';
+
 import Autocomplete from './Autocomplete';
 import { View } from './common';
-import { colors } from '../style';
 
 export function AccountList({
   items,
@@ -64,7 +67,11 @@ export function AccountList({
   );
 }
 
-export default function AccountAutocomplete({ embedded, ...props }) {
+export default function AccountAutocomplete({
+  embedded,
+  includeClosedAccounts = true,
+  ...props
+}) {
   let accounts = useCachedAccounts() || [];
 
   return (
@@ -72,7 +79,11 @@ export default function AccountAutocomplete({ embedded, ...props }) {
       strict={true}
       highlightFirst={true}
       embedded={embedded}
-      suggestions={accounts}
+      suggestions={
+        includeClosedAccounts
+          ? accounts
+          : accounts.filter(a => a.closed === false)
+      }
       renderItems={(items, getItemProps, highlightedIndex) => (
         <AccountList
           items={items}

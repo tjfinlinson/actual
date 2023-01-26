@@ -1,13 +1,7 @@
-import React, {
-  useRef,
-  useEffect,
-  useCallback,
-  useLayoutEffect,
-  useMemo
-} from 'react';
-import { useDispatch } from 'react-redux';
-import { TransactionTable } from './TransactionsTable';
-import lively from '@jlongster/lively';
+import React, { useRef, useCallback, useLayoutEffect } from 'react';
+import { useHistory } from 'react-router';
+
+import { send } from 'loot-core/src/platform/client/fetch';
 import {
   splitTransaction,
   updateTransaction,
@@ -15,10 +9,9 @@ import {
   realizeTempTransactions,
   applyTransactionDiff
 } from 'loot-core/src/shared/transactions';
-import { send } from 'loot-core/src/platform/client/fetch';
-import { pushModal } from 'loot-core/src/client/actions/modals';
 import { getChangedValues, applyChanges } from 'loot-core/src/shared/util';
-const uuid = require('loot-core/src/platform/uuid');
+
+import { TransactionTable } from './TransactionsTable';
 
 // When data changes, there are two ways to update the UI:
 //
@@ -81,31 +74,15 @@ export default function TransactionList({
   renderEmpty,
   onChange,
   onRefetch,
-  onRefetchUpToRow,
   onCloseAddTransaction,
-  onManagePayees,
   onCreatePayee
 }) {
-  let dispatch = useDispatch();
-  let table = useRef();
   let transactionsLatest = useRef();
-  let scrollTo = useRef();
-
-  // useEffect(() => {
-  //   if (scrollTo.current) {
-  //     // table.current.scrollTo(scrollTo.current);
-  //   }
-  // }, [transactions]);
-
-  useEffect(clearScrollTo);
+  let history = useHistory();
 
   useLayoutEffect(() => {
     transactionsLatest.current = transactions;
   }, [transactions]);
-
-  function clearScrollTo() {
-    scrollTo.current = null;
-  }
 
   let onAdd = useCallback(async newTransactions => {
     newTransactions = realizeTempTransactions(newTransactions);
@@ -156,7 +133,8 @@ export default function TransactionList({
         if (
           newTransaction[field] == null ||
           newTransaction[field] === '' ||
-          newTransaction[field] === 0
+          newTransaction[field] === 0 ||
+          newTransaction[field] === false
         ) {
           newTransaction[field] = diff[field];
         }
@@ -164,6 +142,13 @@ export default function TransactionList({
     }
     return newTransaction;
   }, []);
+
+  let onManagePayees = useCallback(
+    id => {
+      history.push('/payees', { selectedPayee: id });
+    },
+    [history]
+  );
 
   return (
     <TransactionTable
@@ -194,7 +179,6 @@ export default function TransactionList({
       onAddSplit={onAddSplit}
       onManagePayees={onManagePayees}
       onCreatePayee={onCreatePayee}
-      onScroll={clearScrollTo}
       style={{ backgroundColor: 'white' }}
     />
   );

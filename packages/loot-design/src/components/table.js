@@ -9,14 +9,17 @@ import React, {
   useMemo
 } from 'react';
 import { useStore } from 'react-redux';
-import { scope } from '@jlongster/lively';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { FixedSizeList } from './FixedSizeList';
+
+import { scope } from '@jlongster/lively';
+
 import { styles, colors } from '../style';
-import DeleteIcon from '../svg/Delete';
+import AnimatedLoading from '../svg/AnimatedLoading';
+import DeleteIcon from '../svg/v0/Delete';
+import ExpandArrow from '../svg/v0/ExpandArrow';
 import Checkmark from '../svg/v1/Checkmark';
-import ExpandArrow from '../svg/ExpandArrow';
-import AnimatedLoading from '../svg/v1/AnimatedLoading';
+import { keys } from '../util/keys';
+
 import {
   View,
   Text,
@@ -26,16 +29,12 @@ import {
   IntersectionBoundary,
   Menu
 } from './common';
-import { KeyHandlers } from './KeyHandlers';
-import SheetValue from './spreadsheet/SheetValue';
 import DateSelect from './DateSelect';
+import { FixedSizeList } from './FixedSizeList';
+import { KeyHandlers } from './KeyHandlers';
 import format from './spreadsheet/format';
-import { keys } from '../util/keys';
-import {
-  AvoidRefocusScrollProvider,
-  useProperFocus,
-  focusElement
-} from './useProperFocus';
+import SheetValue from './spreadsheet/SheetValue';
+import { AvoidRefocusScrollProvider, useProperFocus } from './useProperFocus';
 import { useSelectedItems } from './useSelected';
 
 export const ROW_HEIGHT = 32;
@@ -251,26 +250,23 @@ export function Row({
   let rowRef = useRef(null);
   let timer = useRef(null);
 
-  useEffect(
-    () => {
-      if (highlighted && !prevHighlighted.current && rowRef.current) {
-        rowRef.current.classList.add('animated');
-        setShouldHighlight(true);
+  useEffect(() => {
+    if (highlighted && !prevHighlighted.current && rowRef.current) {
+      rowRef.current.classList.add('animated');
+      setShouldHighlight(true);
 
-        clearTimeout(timer.current);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => {
+        setShouldHighlight(false);
+
         timer.current = setTimeout(() => {
-          setShouldHighlight(false);
-
-          timer.current = setTimeout(() => {
-            if (rowRef.current) {
-              rowRef.current.classList.remove('animated');
-            }
-          }, 500);
+          if (rowRef.current) {
+            rowRef.current.classList.remove('animated');
+          }
         }, 500);
-      }
-    },
-    [highlighted]
-  );
+      }, 500);
+    }
+  }, [highlighted]);
 
   useEffect(() => {
     prevHighlighted.current = highlighted;
@@ -725,7 +721,11 @@ export function TableHeader({ headers, children, version, ...rowProps }) {
   return (
     <View
       style={
-        version === 'v2' && { borderRadius: '6px 6px 0 0', overflow: 'hidden' }
+        version === 'v2' && {
+          borderRadius: '6px 6px 0 0',
+          overflow: 'hidden',
+          flexShrink: 0
+        }
       }
     >
       <Row
@@ -989,7 +989,14 @@ export const Table = React.forwardRef(
     if (loading) {
       return (
         <View
-          style={[{ flex: 1, justifyContent: 'center', alignItems: 'center' }]}
+          style={[
+            {
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor
+            }
+          ]}
         >
           <AnimatedLoading width={25} color={colors.n1} />
         </View>
@@ -1234,8 +1241,8 @@ export function useTableNavigator(data, fields, opts = {}) {
                     ? 'up'
                     : 'down'
                   : e.shiftKey
-                    ? 'left'
-                    : 'right'
+                  ? 'left'
+                  : 'right'
               );
               break;
             default:

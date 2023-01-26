@@ -1,13 +1,14 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { format as formatDate, parse as parseDate, parseISO } from 'date-fns';
-import { dayFromDate, getMonthYearFormat } from 'loot-core/src/shared/months';
-import { View, Input } from 'loot-design/src/components/common';
-import PayeeAutocomplete from 'loot-design/src/components/PayeeAutocomplete';
+
+import { getMonthYearFormat } from 'loot-core/src/shared/months';
 import AccountAutocomplete from 'loot-design/src/components/AccountAutocomplete';
 import Autocomplete from 'loot-design/src/components/Autocomplete';
 import CategoryAutocomplete from 'loot-design/src/components/CategorySelect';
+import { View, Input } from 'loot-design/src/components/common';
 import DateSelect from 'loot-design/src/components/DateSelect';
+import { Checkbox } from 'loot-design/src/components/forms';
+import PayeeAutocomplete from 'loot-design/src/components/PayeeAutocomplete';
 import RecurringSchedulePicker from 'loot-design/src/components/RecurringSchedulePicker';
 
 export default function GenericInput({
@@ -50,7 +51,7 @@ export default function GenericInput({
                 accounts={accounts}
                 multi={multi}
                 showMakeTransfer={false}
-                openOnFocus={false}
+                openOnFocus={true}
                 value={value}
                 onSelect={onChange}
                 inputProps={{
@@ -68,7 +69,7 @@ export default function GenericInput({
               accounts={accounts}
               value={value}
               multi={multi}
-              openOnFocus={false}
+              openOnFocus={true}
               onSelect={onChange}
               inputProps={{
                 inputRef,
@@ -84,7 +85,7 @@ export default function GenericInput({
               categoryGroups={categoryGroups}
               value={value}
               multi={multi}
-              openOnFocus={false}
+              openOnFocus={true}
               onSelect={onChange}
               inputProps={{
                 inputRef,
@@ -147,6 +148,16 @@ export default function GenericInput({
           }
           break;
       }
+      break;
+
+    case 'boolean':
+      content = (
+        <Checkbox
+          checked={value}
+          value={value}
+          onChange={e => onChange(!value)}
+        />
+      );
       break;
 
     default:

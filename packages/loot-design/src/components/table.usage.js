@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+
 import { Section, Component } from '../guide/components';
+
 import { View, Text } from './common';
 import {
   TableWithNavigator as Table,
@@ -8,6 +10,7 @@ import {
   InputCell,
   useTableNavigator
 } from './table';
+
 let uuid = require('loot-core/src/platform/uuid');
 
 function PersonRow({ person, editing, focusedField, onEdit, onUpdate }) {
@@ -90,12 +93,8 @@ export default () => (
         let [items, setItems] = useState(() => {
           return [...people];
         });
-        let {
-          onEdit,
-          editingId,
-          focusedField,
-          getNavigatorProps
-        } = useTableNavigator(items, getFields);
+        let { onEdit, editingId, focusedField, getNavigatorProps } =
+          useTableNavigator(items, getFields);
 
         function onUpdate(id, name, value) {
           let idx = items.findIndex(item => item.id === id);

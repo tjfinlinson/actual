@@ -1,24 +1,15 @@
 import React, { useState, useRef, useEffect, useReducer } from 'react';
 import { useSelector } from 'react-redux';
-import scopeTab from 'react-modal/lib/helpers/scopeTab';
+
 import {
   parse as parseDate,
   format as formatDate,
   isValid as isDateValid
 } from 'date-fns';
+import scopeTab from 'react-modal/lib/helpers/scopeTab';
+
 import { send } from 'loot-core/src/platform/client/fetch';
 import { getMonthYearFormat } from 'loot-core/src/shared/months';
-import { titleFirst } from 'loot-core/src/shared/util';
-import {
-  View,
-  Text,
-  Tooltip,
-  Stack,
-  Button,
-  InitialFocus,
-  Menu,
-  CustomSelect
-} from 'loot-design/src/components/common';
 import {
   mapField,
   friendlyOp,
@@ -29,11 +20,22 @@ import {
   FIELD_TYPES,
   TYPE_INFO
 } from 'loot-core/src/shared/rules';
-import DeleteIcon from 'loot-design/src/svg/Delete';
+import { titleFirst } from 'loot-core/src/shared/util';
+import {
+  View,
+  Text,
+  Tooltip,
+  Stack,
+  Button,
+  Menu,
+  CustomSelect
+} from 'loot-design/src/components/common';
+import { colors } from 'loot-design/src/style';
+import DeleteIcon from 'loot-design/src/svg/v0/Delete';
 import SettingsSliderAlternate from 'loot-design/src/svg/v2/SettingsSliderAlternate';
+
+import { Value } from '../ManageRules';
 import GenericInput from '../util/GenericInput';
-import { Value } from '../modals/ManageRules';
-import { styles, colors } from 'loot-design/src/style';
 
 let filterFields = [
   'date',
@@ -149,7 +151,11 @@ function ConfigureField({ field, op, value, dispatch, onApply }) {
                       ['amount-outflow', 'Amount (outflow)']
                     ]
                   : field === 'date'
-                  ? [['date', 'Date'], ['month', 'Month'], ['year', 'Year']]
+                  ? [
+                      ['date', 'Date'],
+                      ['month', 'Month'],
+                      ['year', 'Year']
+                    ]
                   : null
               }
               value={subfield}
@@ -176,6 +182,7 @@ function ConfigureField({ field, op, value, dispatch, onApply }) {
           {type === 'boolean'
             ? [
                 <OpButton
+                  key="true"
                   op="true"
                   selected={value === true}
                   onClick={() => {
@@ -184,6 +191,7 @@ function ConfigureField({ field, op, value, dispatch, onApply }) {
                   }}
                 />,
                 <OpButton
+                  key="false"
                   op="false"
                   selected={value === false}
                   onClick={() => {
@@ -194,6 +202,7 @@ function ConfigureField({ field, op, value, dispatch, onApply }) {
               ]
             : ops.map(currOp => (
                 <OpButton
+                  key={currOp}
                   op={currOp}
                   selected={currOp === op}
                   onClick={() => dispatch({ type: 'set-op', op: currOp })}
@@ -439,6 +448,7 @@ export function AppliedFilters({ filters, editingFilter, onDelete }) {
     >
       {filters.map((filter, i) => (
         <FilterExpression
+          key={i}
           customName={filter.customName}
           field={filter.field}
           op={filter.op}

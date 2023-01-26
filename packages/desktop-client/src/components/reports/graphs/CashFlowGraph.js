@@ -1,4 +1,6 @@
 import React from 'react';
+
+import * as d from 'date-fns';
 import {
   VictoryChart,
   VictoryBar,
@@ -7,11 +9,12 @@ import {
   VictoryVoronoiContainer,
   VictoryGroup
 } from 'victory';
-import * as d from 'date-fns';
+
+import { colors } from 'loot-design/src/style';
+
+import theme from '../chart-theme';
 import Container from '../Container';
 import Tooltip from '../Tooltip';
-import theme from '../chart-theme';
-import { colors } from 'loot-design/src/style';
 
 function CashFlowGraph({ style, start, end, graphData, isConcise, compact }) {
   return (
@@ -19,7 +22,7 @@ function CashFlowGraph({ style, start, end, graphData, isConcise, compact }) {
       {(width, height, portalHost) =>
         graphData && (
           <VictoryChart
-            scale={{ x: 'time' }}
+            scale={{ x: 'time', y: 'linear' }}
             theme={theme}
             domainPadding={10}
             width={width}

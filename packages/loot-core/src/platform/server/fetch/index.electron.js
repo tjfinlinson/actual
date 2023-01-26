@@ -1,4 +1,5 @@
 let fs = require('fs');
+
 let fetch = require('node-fetch');
 
 async function fetchBinary(url, filepath) {
@@ -9,7 +10,7 @@ async function fetchBinary(url, filepath) {
     res.body.on('error', err => {
       reject(err);
     });
-    fileStream.on('finish', function() {
+    fileStream.on('finish', function () {
       resolve();
     });
   });

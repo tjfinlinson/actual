@@ -6,12 +6,11 @@ import React, {
   useImperativeHandle,
   useMemo
 } from 'react';
+
 import * as d from 'date-fns';
-import { css } from 'glamor';
 import Pikaday from 'pikaday';
+
 import 'pikaday/css/pikaday.css';
-import { styles, colors } from '../style';
-import { View, Input, Tooltip } from './common';
 import {
   getDayMonthFormat,
   getDayMonthRegex,
@@ -19,6 +18,9 @@ import {
   getShortYearRegex
 } from 'loot-core/src/shared/months';
 
+import { colors } from '../style';
+
+import { View, Input, Tooltip } from './common';
 import DateSelectLeft from './DateSelect.left.png';
 import DateSelectRight from './DateSelect.right.png';
 
@@ -165,11 +167,11 @@ export default function DateSelect({
         return d.format(date, dateFormat);
       }
     }
-    return null;
+    return '';
   }, [defaultValue, dateFormat]);
 
   let picker = useRef(null);
-  let [value, setValue] = useState(parsedDefaultValue || '');
+  let [value, setValue] = useState(parsedDefaultValue);
   let [open, setOpen] = useState(embedded || isOpen || false);
   let inputRef = useRef(null);
 
@@ -222,9 +224,6 @@ export default function DateSelect({
   }, [value]);
 
   function onKeyDown(e) {
-    let ENTER = 13;
-    let UP = 38;
-    let DOWN = 40;
     let ESC = 27;
 
     if (
@@ -327,7 +326,9 @@ export default function DateSelect({
               setValue(selectedValue || '');
 
               let date = d.parse(selectedValue, dateFormat, new Date());
-              onSelect(d.format(date, 'yyyy-MM-dd'));
+              if (date instanceof Date && !isNaN(date)) {
+                onSelect(d.format(date, 'yyyy-MM-dd'));
+              }
             }
           }
         }}

@@ -19,32 +19,11 @@ protocol.registerSchemesAsPrivileged([
 
 global.fetch = require('node-fetch');
 
-const SentryClient = require('@sentry/electron');
 const findOpenSocket = require('./findOpenSocket');
 const updater = require('./updater');
 const about = require('./about');
-const { SentryMetricIntegration } = require('@jlongster/sentry-metrics-actual');
 
 require('./security');
-
-if (!isDev) {
-  // Install sentry
-  SentryClient.init({
-    dsn:
-      'https://f2fa901455894dc8bf28210ef1247e2d:b9e69eb21d9740539b3ff593f7346396@sentry.io/261029',
-    release: app.getVersion(),
-    enableUnresponsive: false,
-    ignoreErrors: ['PostError', 'HTTPError', 'ResizeObserver loop'],
-    integrations: [
-      new SentryMetricIntegration({
-        url: 'https://sync.actualbudget.com/metrics',
-        metric: 'app-errors',
-        dimensions: { platform: 'desktop' },
-        headers: { Origin: 'app://actual' }
-      })
-    ]
-  });
-}
 
 const { fork } = require('child_process');
 const path = require('path');
@@ -86,8 +65,6 @@ if (isDev) {
 }
 
 function createBackgroundProcess(socketName) {
-  const SentryClient = require('@sentry/electron');
-
   serverProcess = fork(__dirname + '/server.js', [
     '--subprocess',
     app.getVersion(),
@@ -97,11 +74,7 @@ function createBackgroundProcess(socketName) {
   serverProcess.on('message', msg => {
     switch (msg.type) {
       case 'captureEvent':
-        let event = msg.event;
-        SentryClient.captureEvent(event);
-        break;
       case 'captureBreadcrumb':
-        SentryClient.addBreadcrumb(msg.breadcrumb);
         break;
       case 'shouldAutoUpdate':
         if (msg.flag) {
@@ -217,11 +190,7 @@ function updateMenu(isBudgetOpen) {
   const fileItems = file.submenu.items;
   fileItems
     .filter(
-      item =>
-        item.label === 'Start Tutorial' ||
-        item.label === 'Manage Payees...' ||
-        item.label === 'Manage Rules...' ||
-        item.label === 'Load Backup...'
+      item => item.label === 'Start Tutorial' || item.label === 'Load Backup...'
     )
 
     .map(item => (item.enabled = isBudgetOpen));
@@ -273,7 +242,7 @@ app.on('ready', async () => {
 
     const pathname = parsedUrl.pathname;
 
-    if (pathname.startsWith('/static') || pathname.startsWith('/Inter')) {
+    if (pathname.startsWith('/static')) {
       callback({
         path: path.normalize(`${__dirname}/client-build${pathname}`)
       });
@@ -362,8 +331,8 @@ ipcMain.on('screenshot', () => {
     let width = 1100;
 
     // This is for the main screenshot inside the frame
-    clientWin.setSize(width, (width * (427 / 623)) | 0);
-    // clientWin.setSize(width, (width * (495 / 700)) | 0);
+    clientWin.setSize(width, Math.floor(width * (427 / 623)));
+    // clientWin.setSize(width, Math.floor(width * (495 / 700)));
   }
 });
 

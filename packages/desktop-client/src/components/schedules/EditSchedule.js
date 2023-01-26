@@ -1,43 +1,33 @@
-import React, { useEffect, useState, useReducer } from 'react';
-import { useParams, useHistory } from 'react-router-dom';
+import React, { useEffect, useReducer } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useParams, useHistory } from 'react-router-dom';
+
 import { pushModal } from 'loot-core/src/client/actions/modals';
-import { css } from 'glamor';
-import { send, sendCatch } from 'loot-core/src/platform/client/fetch';
-import q, { runQuery, liveQuery } from 'loot-core/src/client/query-helpers';
-import { extractScheduleConds } from 'loot-core/src/shared/schedules';
-import * as monthUtils from 'loot-core/src/shared/months';
 import { useCachedPayees } from 'loot-core/src/client/data-hooks/payees';
+import q, { runQuery, liveQuery } from 'loot-core/src/client/query-helpers';
+import { send, sendCatch } from 'loot-core/src/platform/client/fetch';
+import * as monthUtils from 'loot-core/src/shared/months';
+import { extractScheduleConds } from 'loot-core/src/shared/schedules';
+import AccountAutocomplete from 'loot-design/src/components/AccountAutocomplete';
+import { Stack, View, Text, Button } from 'loot-design/src/components/common';
+import DateSelect from 'loot-design/src/components/DateSelect';
 import {
   FormField,
   FormLabel,
   Checkbox
 } from 'loot-design/src/components/forms';
-import { colors, styles } from 'loot-design/src/style';
 import PayeeAutocomplete from 'loot-design/src/components/PayeeAutocomplete';
-import AccountAutocomplete from 'loot-design/src/components/AccountAutocomplete';
-import {
-  Stack,
-  Input,
-  InputWithContent,
-  View,
-  Text,
-  Button,
-  ModalButtons
-} from 'loot-design/src/components/common';
-import DateSelect from 'loot-design/src/components/DateSelect';
+import RecurringSchedulePicker from 'loot-design/src/components/RecurringSchedulePicker';
 import { SelectedItemsButton } from 'loot-design/src/components/table';
-import SimpleTransactionsTable from '../accounts/SimpleTransactionsTable';
-import { usePageType } from '../Page';
-import { Page } from '../Page';
 import useSelected, {
   SelectedProvider
 } from 'loot-design/src/components/useSelected';
-import { OpSelect } from '../modals/EditRule';
-import { AmountInput, BetweenAmountInput } from '../util/AmountInput';
-import { SchedulesProviderRaw } from 'loot-core/src/client/data-hooks/schedules';
+import { colors } from 'loot-design/src/style';
 
-import RecurringSchedulePicker from 'loot-design/src/components/RecurringSchedulePicker';
+import SimpleTransactionsTable from '../accounts/SimpleTransactionsTable';
+import { OpSelect } from '../modals/EditRule';
+import { Page } from '../Page';
+import { AmountInput, BetweenAmountInput } from '../util/AmountInput';
 
 function mergeFields(defaults, initial) {
   let res = { ...defaults };
@@ -101,8 +91,6 @@ export default function ScheduleDetails() {
   let dateFormat = useSelector(state => {
     return state.prefs.local.dateFormat || 'MM/dd/yyyy';
   });
-
-  let pageType = usePageType();
 
   let [state, dispatch] = useReducer(
     (state, action) => {
@@ -223,11 +211,7 @@ export default function ScheduleDetails() {
   );
 
   async function loadSchedule() {
-    let { data } = await runQuery(
-      q('schedules')
-        .filter({ id })
-        .select('*')
-    );
+    let { data } = await runQuery(q('schedules').filter({ id }).select('*'));
     return data[0];
   }
 
@@ -261,7 +245,6 @@ export default function ScheduleDetails() {
   useEffect(() => {
     async function run() {
       let date = state.fields.date;
-      let dates = null;
 
       if (date == null) {
         dispatch({ type: 'set-upcoming-dates', dates: null });
@@ -307,7 +290,7 @@ export default function ScheduleDetails() {
     let unsubscribe;
 
     if (state.schedule && state.transactionsMode === 'matched') {
-      let { error, conditions } = updateScheduleConditions(
+      let { conditions } = updateScheduleConditions(
         state.schedule,
         state.fields
       );
@@ -452,6 +435,7 @@ export default function ScheduleDetails() {
         <FormField style={{ flex: 1 }}>
           <FormLabel title="Account" />
           <AccountAutocomplete
+            includeClosedAccounts={false}
             value={state.fields.account}
             inputProps={{ placeholder: '(none)' }}
             onSelect={id =>
@@ -548,7 +532,9 @@ export default function ScheduleDetails() {
                 style={{ marginTop: 10, color: colors.n4 }}
               >
                 {state.upcomingDates.map(date => (
-                  <View>{monthUtils.format(date, `${dateFormat} EEEE`)}</View>
+                  <View key={date}>
+                    {monthUtils.format(date, `${dateFormat} EEEE`)}
+                  </View>
                 ))}
               </Stack>
             </View>
@@ -571,7 +557,7 @@ export default function ScheduleDetails() {
               dispatch({ type: 'set-repeats', repeats: e.target.checked });
             }}
           />
-          <label for="form_repeats" style={{ userSelect: 'none' }}>
+          <label htmlFor="form_repeats" style={{ userSelect: 'none' }}>
             Repeats
           </label>
         </View>
@@ -602,7 +588,10 @@ export default function ScheduleDetails() {
                 });
               }}
             />
-            <label for="form_posts_transaction" style={{ userSelect: 'none' }}>
+            <label
+              htmlFor="form_posts_transaction"
+              style={{ userSelect: 'none' }}
+            >
               Automatically add transaction
             </label>
           </View>

@@ -10,6 +10,7 @@ import {
   getPending,
   migrate
 } from './migrations';
+
 const fs = require('fs');
 const path = require('path');
 

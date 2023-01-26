@@ -1,6 +1,6 @@
-const undo = require('../undo');
 const { captureException, captureBreadcrumb } = require('../../exceptions');
 const uuid = require('../../uuid');
+const undo = require('../undo');
 let replyHandlers = new Map();
 let listeners = new Map();
 let messageQueue = [];
@@ -14,10 +14,10 @@ class ReconstructedError extends Error {
     this.message = message;
 
     Object.defineProperty(this, 'stack', {
-      get: function() {
+      get: function () {
         return 'extended ' + this._stack;
       },
-      set: function(value) {
+      set: function (value) {
         this._stack = value;
       }
     });
@@ -172,7 +172,10 @@ module.exports.listen = function listen(name, cb) {
 
   return () => {
     let arr = listeners.get(name);
-    listeners.set(name, arr.filter(cb_ => cb_ !== cb));
+    listeners.set(
+      name,
+      arr.filter(cb_ => cb_ !== cb)
+    );
   };
 };
 

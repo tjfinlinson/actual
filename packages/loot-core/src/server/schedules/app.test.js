@@ -1,18 +1,18 @@
-import * as db from '../db';
-import { runQuery as aqlQuery } from '../aql/schema/run-query';
+import MockDate from 'mockdate';
+
 import q from '../../shared/query';
 import { loadRules, updateRule } from '../accounts/transaction-rules';
+import { runQuery as aqlQuery } from '../aql';
 import { loadMappings } from '../db/mappings';
+
 import {
   updateConditions,
   getNextDate,
-  listSchedules,
   createSchedule,
   updateSchedule,
   deleteSchedule,
   setNextDate
 } from './app';
-import MockDate from 'mockdate';
 
 beforeEach(async () => {
   await global.emptyDatabase()();
@@ -73,7 +73,10 @@ describe('schedule app', () => {
           value: {
             start: '2020-12-20',
             frequency: 'monthly',
-            patterns: [{ type: 'day', value: 15 }, { type: 'day', value: 30 }]
+            patterns: [
+              { type: 'day', value: 15 },
+              { type: 'day', value: 30 }
+            ]
           }
         })
       ).toBe('2021-05-30');
@@ -90,7 +93,10 @@ describe('schedule app', () => {
             value: {
               start: '2020-12-20',
               frequency: 'monthly',
-              patterns: [{ type: 'day', value: 15 }, { type: 'day', value: 30 }]
+              patterns: [
+                { type: 'day', value: 15 },
+                { type: 'day', value: 30 }
+              ]
             }
           }
         ]
@@ -98,11 +104,7 @@ describe('schedule app', () => {
 
       let {
         data: [row]
-      } = await aqlQuery(
-        q('schedules')
-          .filter({ id })
-          .select('*')
-      );
+      } = await aqlQuery(q('schedules').filter({ id }).select('*'));
 
       expect(row).toBeTruthy();
       expect(row.rule).toBeTruthy();
@@ -125,16 +127,17 @@ describe('schedule app', () => {
             value: {
               start: '2020-12-20',
               frequency: 'monthly',
-              patterns: [{ type: 'day', value: 15 }, { type: 'day', value: 30 }]
+              patterns: [
+                { type: 'day', value: 15 },
+                { type: 'day', value: 30 }
+              ]
             }
           }
         ]
       });
 
       let res = await aqlQuery(
-        q('schedules')
-          .filter({ id })
-          .select(['next_date', 'posts_transaction'])
+        q('schedules').filter({ id }).select(['next_date', 'posts_transaction'])
       );
       let row = res.data[0];
 
@@ -152,16 +155,17 @@ describe('schedule app', () => {
             value: {
               start: '2020-12-20',
               frequency: 'monthly',
-              patterns: [{ type: 'day', value: 18 }, { type: 'day', value: 29 }]
+              patterns: [
+                { type: 'day', value: 18 },
+                { type: 'day', value: 29 }
+              ]
             }
           }
         ]
       });
 
       res = await aqlQuery(
-        q('schedules')
-          .filter({ id })
-          .select(['next_date', 'posts_transaction'])
+        q('schedules').filter({ id }).select(['next_date', 'posts_transaction'])
       );
       row = res.data[0];
 
@@ -179,7 +183,10 @@ describe('schedule app', () => {
             value: {
               start: '2020-12-20',
               frequency: 'monthly',
-              patterns: [{ type: 'day', value: 15 }, { type: 'day', value: 30 }]
+              patterns: [
+                { type: 'day', value: 15 },
+                { type: 'day', value: 30 }
+              ]
             }
           }
         ]
@@ -202,16 +209,17 @@ describe('schedule app', () => {
             value: {
               start: '2020-12-20',
               frequency: 'monthly',
-              patterns: [{ type: 'day', value: 15 }, { type: 'day', value: 30 }]
+              patterns: [
+                { type: 'day', value: 15 },
+                { type: 'day', value: 30 }
+              ]
             }
           }
         ]
       });
 
       let { data: ruleId } = await aqlQuery(
-        q('schedules')
-          .filter({ id })
-          .calculate('rule')
+        q('schedules').filter({ id }).calculate('rule')
       );
 
       // Manually update the rule
@@ -224,16 +232,17 @@ describe('schedule app', () => {
             value: {
               start: '2020-12-20',
               frequency: 'monthly',
-              patterns: [{ type: 'day', value: 18 }, { type: 'day', value: 28 }]
+              patterns: [
+                { type: 'day', value: 18 },
+                { type: 'day', value: 28 }
+              ]
             }
           }
         ]
       });
 
       let res = await aqlQuery(
-        q('schedules')
-          .filter({ id })
-          .select(['next_date'])
+        q('schedules').filter({ id }).select(['next_date'])
       );
       let row = res.data[0];
 
@@ -242,11 +251,7 @@ describe('schedule app', () => {
       MockDate.set(new Date(2021, 4, 17));
       await setNextDate({ id });
 
-      res = await aqlQuery(
-        q('schedules')
-          .filter({ id })
-          .select(['next_date'])
-      );
+      res = await aqlQuery(q('schedules').filter({ id }).select(['next_date']));
       row = res.data[0];
 
       expect(row.next_date).toBe('2021-05-18');

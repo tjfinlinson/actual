@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+
 import { css } from 'glamor';
+
+import { send } from 'loot-core/src/platform/client/fetch';
+import { getCreateKeyError } from 'loot-core/src/shared/errors';
 import {
   View,
   Text,
-  Stack,
   Modal,
-  Button,
   ButtonWithLoading,
   ExternalLink,
   P,
@@ -13,17 +15,13 @@ import {
   Input,
   InitialFocus
 } from 'loot-design/src/components/common';
-import { send } from 'loot-core/src/platform/client/fetch';
-import { styles, colors } from 'loot-design/src/style';
-import { getCreateKeyError } from 'loot-core/src/shared/errors';
+import { colors } from 'loot-design/src/style';
 
 export default function CreateEncryptionKey({
   modalProps,
   actions,
-  budgetId,
   options = {}
 }) {
-  let [enabling, setEnabling] = useState(false);
   let [password, setPassword] = useState('');
   let [loading, setLoading] = useState(false);
   let [error, setError] = useState('');
@@ -70,7 +68,7 @@ export default function CreateEncryptionKey({
                 other devices will have to revert to this version of your data.{' '}
                 <ExternalLink
                   asAnchor
-                  href="https://actualbudget.com/encrypted-syncing"
+                  href="https://actualbudget.github.io/docs/Getting-Started/sync#end-to-end-encryption"
                 >
                   Learn more
                 </ExternalLink>
@@ -80,8 +78,8 @@ export default function CreateEncryptionKey({
                   <li>
                     <strong>Important:</strong> if you forget this password{' '}
                     <em>and</em> you don't have any local copies of your data,
-                    you will lose access to all your data. We cannot decrypt
-                    your data.
+                    you will lose access to all your data. The data cannot be
+                    decrypted without the password.
                   </li>
                   <li>
                     This key only applies to this file. You will need to
@@ -91,6 +89,11 @@ export default function CreateEncryptionKey({
                     If you've already downloaded your data on other devices, you
                     will need to reset them. Actual will automatically take you
                     through this process.
+                  </li>
+                  <li>
+                    It is recommended for the encryption password to be
+                    different than the log-in password in order to better
+                    protect your data.
                   </li>
                 </ul>
               </P>
@@ -104,7 +107,7 @@ export default function CreateEncryptionKey({
                 will take you through that process on those devices.{' '}
                 <ExternalLink
                   asAnchor
-                  href="https://actualbudget.com/encrypted-syncing"
+                  href="https://actualbudget.github.io/docs/Getting-Started/sync#end-to-end-encryption"
                 >
                   Learn more
                 </ExternalLink>

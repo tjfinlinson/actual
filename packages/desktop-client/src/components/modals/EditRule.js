@@ -1,31 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { bindActionCreators } from 'redux';
 import { useDispatch, useSelector } from 'react-redux';
+
 import {
   initiallyLoadPayees,
   setUndoEnabled
 } from 'loot-core/src/client/actions/queries';
-import * as undo from 'loot-core/src/platform/client/undo';
+import { useSchedules } from 'loot-core/src/client/data-hooks/schedules';
 import q, { runQuery } from 'loot-core/src/client/query-helpers';
-import {
-  View,
-  Text,
-  Modal,
-  Button,
-  Select,
-  Stack,
-  Input,
-  CustomSelect,
-  Tooltip
-} from 'loot-design/src/components/common';
-import GenericInput from '../util/GenericInput';
-import { keys } from 'loot-design/src/util/keys';
-import { send, listen, unlisten } from 'loot-core/src/platform/client/fetch';
-import { getStatus } from 'loot-core/src/shared/schedules';
-import { colors, styles } from 'loot-design/src/style';
-import SubtractIcon from 'loot-design/src/svg/Subtract';
-import AddIcon from 'loot-design/src/svg/Add';
-import InformationOutline from 'loot-design/src/svg/v1/InformationOutline';
+import { send } from 'loot-core/src/platform/client/fetch';
+import * as monthUtils from 'loot-core/src/shared/months';
 import {
   mapField,
   friendlyOp,
@@ -36,20 +19,33 @@ import {
   FIELD_TYPES,
   TYPE_INFO
 } from 'loot-core/src/shared/rules';
-import useSelected, {
-  SelectedProvider
-} from 'loot-design/src/components/useSelected';
-import SimpleTransactionsTable from '../accounts/SimpleTransactionsTable';
-import { StatusBadge } from '../schedules/StatusBadge';
-import DisplayId from '../util/DisplayId';
-import { useSchedules } from 'loot-core/src/client/data-hooks/schedules';
 import {
   integerToCurrency,
   integerToAmount,
   amountToInteger
 } from 'loot-core/src/shared/util';
-import * as monthUtils from 'loot-core/src/shared/months';
+import {
+  View,
+  Text,
+  Modal,
+  Button,
+  Stack,
+  CustomSelect,
+  Tooltip
+} from 'loot-design/src/components/common';
+import useSelected, {
+  SelectedProvider
+} from 'loot-design/src/components/useSelected';
+import { colors } from 'loot-design/src/style';
+import AddIcon from 'loot-design/src/svg/v0/Add';
+import SubtractIcon from 'loot-design/src/svg/v0/Subtract';
+import InformationOutline from 'loot-design/src/svg/v1/InformationOutline';
+
+import SimpleTransactionsTable from '../accounts/SimpleTransactionsTable';
+import { StatusBadge } from '../schedules/StatusBadge';
 import { BetweenAmountInput } from '../util/AmountInput';
+import DisplayId from '../util/DisplayId';
+import GenericInput from '../util/GenericInput';
 
 function updateValue(array, value, update) {
   return array.map(v => (v === value ? update() : v));
@@ -180,7 +176,7 @@ export function ConditionEditor({
   onDelete,
   onAdd
 }) {
-  let { field, op, value, type, options, error, inputKey } = condition;
+  let { field, op, value, type, options, error } = condition;
 
   if (field === 'amount' && options) {
     if (options.inflow) {
@@ -224,6 +220,18 @@ export function ConditionEditor({
   );
 }
 
+function formatAmount(amount) {
+  if (!amount) {
+    return integerToCurrency(0);
+  } else if (typeof amount === 'number') {
+    return integerToCurrency(amount);
+  } else {
+    return `${integerToCurrency(amount.num1)} to ${integerToCurrency(
+      amount.num2
+    )}`;
+  }
+}
+
 function ScheduleDescription({ id }) {
   let dateFormat = useSelector(state => {
     return state.prefs.local.dateFormat || 'MM/dd/yyyy';
@@ -258,7 +266,7 @@ function ScheduleDescription({ id }) {
         </Text>
         <Text style={{ margin: '0 5px' }}> — </Text>
         <Text style={{ flexShrink: 0 }}>
-          Amount: {integerToCurrency(schedule._amount || 0)}
+          Amount: {formatAmount(schedule._amount)}
         </Text>
         <Text style={{ margin: '0 5px' }}> — </Text>
         <Text style={{ flexShrink: 0 }}>
@@ -276,7 +284,8 @@ let actionFields = [
   'date',
   'amount',
   'category',
-  'account'
+  'account',
+  'cleared'
 ].map(field => [field, mapField(field)]);
 function ActionEditor({ ops, action, editorStyle, onChange, onDelete, onAdd }) {
   let { field, op, value, type, error, inputKey = 'initial' } = action;
@@ -508,9 +517,8 @@ export function ConditionsList({
         }
 
         return (
-          <View>
+          <View key={i}>
             <ConditionEditor
-              key={i}
               conditionFields={conditionFields}
               editorStyle={editorStyle}
               ops={ops}
@@ -584,9 +592,7 @@ export default function EditRule({
 
       if (filters.length > 0) {
         let { data: transactions } = await runQuery(
-          q('transactions')
-            .filter({ $and: filters })
-            .select('*')
+          q('transactions').filter({ $and: filters }).select('*')
         );
         setTransactions(transactions);
       } else {
@@ -781,9 +787,8 @@ export default function EditRule({
                 ) : (
                   <Stack spacing={2}>
                     {actions.map((action, i) => (
-                      <View>
+                      <View key={i}>
                         <ActionEditor
-                          key={i}
                           ops={['set', 'link-schedule']}
                           action={action}
                           editorStyle={editorStyle}

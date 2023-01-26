@@ -1,15 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+
 import * as actions from 'loot-core/src/client/actions';
-import * as undo from 'loot-core/src/platform/client/undo';
-import uuid from 'loot-core/src/platform/uuid';
-import { send, listen, unlisten } from 'loot-core/src/platform/client/fetch';
-import { ManagePayees } from 'loot-design/src/components/payees';
+import { send, listen } from 'loot-core/src/platform/client/fetch';
 import { applyChanges } from 'loot-core/src/shared/util';
+import { ManagePayees } from 'loot-design/src/components/payees';
 
 function ManagePayeesWithData({
-  history,
   modalProps,
   initialSelectedIds,
   lastUndoState,
@@ -54,10 +51,7 @@ function ManagePayeesWithData({
       }
     });
 
-    undo.setUndoState('openModal', 'manage-payees');
-
     return () => {
-      undo.setUndoState('openModal', null);
       unlisten();
     };
   }, []);
@@ -96,19 +90,24 @@ function ManagePayeesWithData({
   }
 
   function onCreateRule(id) {
-    let payee = payees.find(p => p.id === id);
     let rule = {
-      id: null,
       stage: null,
       conditions: [
         {
-          field: 'description',
+          field: 'payee',
           op: 'is',
-          value: payee.id,
+          value: id,
           type: 'id'
         }
       ],
-      actions: []
+      actions: [
+        {
+          op: 'set',
+          field: 'category',
+          value: null,
+          type: 'id'
+        }
+      ]
     };
     pushModal('edit-rule', { rule });
   }

@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
-import { View, Text, Select } from './common';
+
+import { colors } from '../style';
+import Split from '../svg/v0/Split';
+
 import Autocomplete, { defaultFilterSuggestion } from './Autocomplete';
-import { styles, colors } from '../style';
-import Split from '../svg/split';
+import { View, Text, Select } from './common';
 
 export const NativeCategorySelect = React.forwardRef(
   ({ categoryGroups, emptyLabel, ...nativeProps }, ref) => {

@@ -1,17 +1,20 @@
 import React from 'react';
 import { DndProvider } from 'react-dnd';
 import Backend from 'react-dnd-html5-backend';
+
+import { generateCategoryGroups } from 'loot-core/src/mocks';
+import makeSpreadsheet from 'loot-core/src/mocks/spreadsheet';
+import * as monthUtils from 'loot-core/src/shared/months';
+
 import { Section } from '../../guide/components';
+import { colors } from '../../style';
 import { View } from '../common';
 import SpreadsheetContext from '../spreadsheet/SpreadsheetContext';
-import makeSpreadsheet from 'loot-core/src/mocks/spreadsheet';
-import DynamicBudgetTable from './DynamicBudgetTable';
+
 import { BudgetMonthCountContext } from './BudgetMonthCountContext';
-import { generateCategoryGroups } from 'loot-core/src/mocks';
-import * as monthUtils from 'loot-core/src/shared/months';
+import DynamicBudgetTable from './DynamicBudgetTable';
 import * as rollover from './rollover/rollover-components';
 import { RolloverContext } from './rollover/RolloverContext';
-import { colors } from '../../style';
 
 const categoryGroups = generateCategoryGroups([
   {
@@ -123,12 +126,8 @@ export class LiveBudgetPage extends React.Component {
 
   render() {
     let { maxMonths } = this.props;
-    let {
-      startMonth,
-      categoryGroups,
-      collapsed,
-      newCategoryForGroup
-    } = this.state;
+    let { startMonth, categoryGroups, collapsed, newCategoryForGroup } =
+      this.state;
 
     let rolloverComponents = {
       SummaryComponent: rollover.BudgetSummary,

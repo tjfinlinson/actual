@@ -36,7 +36,11 @@ module.exports.serverPush = (name, args) => {
   });
 };
 
-module.exports.send = async function(name, args, { catchErrors = false } = {}) {
+module.exports.send = async function (
+  name,
+  args,
+  { catchErrors = false } = {}
+) {
   if (serverHandler) {
     return serverHandler({ name, args, catchErrors });
   } else {
@@ -56,6 +60,9 @@ module.exports.listen = function listen(name, cb) {
 
   return () => {
     let arr = listeners.get(name);
-    listeners.set(name, arr.filter(cb_ => cb_ !== cb));
+    listeners.set(
+      name,
+      arr.filter(cb_ => cb_ !== cb)
+    );
   };
 };
